@@ -4,7 +4,7 @@ pipeline {
     environment {
         // Change 'bhashkarsingh' to your Docker Hub username or AWS ECR URI
         DOCKER_HUB_USER        = 'bhashkarsingh'
-        APP_NAME               = 'rug-tariff-analytics'
+        APP_NAME               = 'drug-tariff-analytics'
         IMAGE_NAME             = "${DOCKER_HUB_USER}/${APP_NAME}"
         IMAGE_TAG              = "${BUILD_NUMBER}"
         DOCKER_CREDENTIALS_ID  = 'dockerhub-credentials'
@@ -85,21 +85,21 @@ pipeline {
                 echo "==> Verifying Deployment rollout and service status..."
                 sh '''
                     # Wait for rollout to complete
-                    kubectl rollout status deployment/rug-tariff-analytics --timeout=120s
+                    kubectl rollout status deployment/drug-tariff-analytics --timeout=120s
 
                     # Display running pods and service details
                     echo "=== Running Pods ==="
-                    kubectl get pods -l app=rug-tariff-analytics -o wide
+                    kubectl get pods -l app=drug-tariff-analytics -o wide
 
                     echo "=== Kubernetes Service ==="
-                    kubectl get svc rug-tariff-service
+                    kubectl get svc drug-tariff-service
 
                     # Health check verification
                     echo "=== Minikube NodePort Health Check ==="
                     NODE_IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="InternalIP")].address}')
-                    NODE_PORT=$(kubectl get svc rug-tariff-service -o jsonpath='{.spec.ports[0].nodePort}')
+                    NODE_PORT=$(kubectl get svc drug-tariff-service -o jsonpath='{.spec.ports[0].nodePort}')
                     echo "Target URL: http://${NODE_IP}:${NODE_PORT}/healthz"
-                    curl -s -f "http://${NODE_IP}:${NODE_PORT}/healthz" || echo "Note: If running on remote AWS EC2, access via EC2_PUBLIC_IP:${NODE_PORT} or use 'minikube service rug-tariff-service --url'"
+                    curl -s -f "http://${NODE_IP}:${NODE_PORT}/healthz" || echo "Note: If running on remote AWS EC2, access via EC2_PUBLIC_IP:${NODE_PORT} or use 'minikube service drug-tariff-service --url'"
                 '''
             }
         }

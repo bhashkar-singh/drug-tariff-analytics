@@ -1,9 +1,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: rug-tariff-analytics
+  name: drug-tariff-analytics
   labels:
-    app: rug-tariff-analytics
+    app: drug-tariff-analytics
 spec:
   replicas: 2
   revisionHistoryLimit: 5
@@ -14,14 +14,14 @@ spec:
       maxUnavailable: 0
   selector:
     matchLabels:
-      app: rug-tariff-analytics
+      app: drug-tariff-analytics
   template:
     metadata:
       labels:
-        app: rug-tariff-analytics
+        app: drug-tariff-analytics
     spec:
       containers:
-        - name: rug-tariff-analytics
+        - name: drug-tariff-analytics
           image: DOCKER_IMAGE_PLACEHOLDER
           imagePullPolicy: Always
           ports:

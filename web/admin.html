@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Admin | Drug Tariff Analytics</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:wght@600&display=swap">
+<style>
+:root{--bg:#F3F5F9;--panel:#fff;--ink:#0F1B33;--mute:#58657C;--line:#DCE2EC;--M:#0E9F94;--down:#D6454B;--hero:#0B2545}
+@media(prefers-color-scheme:dark){:root{--bg:#0A101C;--panel:#131C2E;--ink:#E6EBF5;--mute:#97A3BA;--line:#26324A;--M:#3CCDBF;--down:#FF7C82;--hero:#0D1A33}}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.55 "IBM Plex Sans",system-ui,sans-serif}
+header{background:var(--hero);color:#fff}
+.w{max-width:760px;margin:0 auto;padding:0 20px}
+header .w{display:flex;justify-content:space-between;align-items:center;height:60px}
+header a{color:#C5D1E6;text-decoration:none}
+h1,h2{font-family:"Source Serif 4",Georgia,serif;margin:0}
+h1{font-size:30px;margin:32px 0 6px}h2{font-size:20px;margin-bottom:10px}
+.mute{color:var(--mute);margin:0 0 20px}
+section{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px 20px;margin-bottom:20px}
+form{display:grid;gap:12px}
+label{display:grid;gap:4px;font-weight:500}
+input,select,textarea,button{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px}
+button{background:var(--M);color:#06202B;font-weight:600;border:0;cursor:pointer;justify-self:start;padding:9px 18px}
+ul{margin:8px 0 0;padding-left:20px;color:var(--mute)}
+#msg{min-height:1.5em;font-weight:500}.ok{color:var(--M)}.bad{color:var(--down)}
+.warn{border-left:3px solid var(--down);padding:8px 12px;background:var(--panel);margin-bottom:20px}
+</style>
+</head>
+<body>
+<header><div class="w"><b>Drug Tariff Analytics</b><a href="/">Back to dashboard</a></div></header>
+<main class="w">
+<h1>Admin</h1>
+<p class="mute">Upload each month's NHSBSA Drug Tariff file and the dashboard rebuilds itself.</p>
+<p class="warn" id="off" hidden>ADMIN_TOKEN is not set on the server, so uploads are disabled.</p>
+<section><h2>Data status</h2><p id="st">Loading</p><ul id="files"></ul></section>
+<section><h2>Upload a monthly file</h2>
+<form id="up">
+<label>Admin token <input type="password" name="token" required autocomplete="off"></label>
+<label>File type <select name="kind"><option value="drug_tariff">Drug Tariff prices</option><option value="concessions">Price concessions</option></select></label>
+<label>Month <input type="month" name="month" required></label>
+<label>File (.csv or .xlsx) <input type="file" name="file" accept=".csv,.xlsx" required></label>
+<button>Upload and process</button>
+</form></section>
+<section><h2>Dr. Reddy's portfolio</h2>
+<p class="mute">One product name fragment per line, for example "atorvastatin". Saving replaces the current list.</p>
+<form id="pfm">
+<label>Admin token <input type="password" name="token" required autocomplete="off"></label>
+<label>Products <textarea name="terms" rows="6"></textarea></label>
+<button>Save portfolio</button>
+</form></section>
+<p id="msg" role="status"></p>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+async function status(){
+  const s=await (await fetch('/api/status')).json();
+  $('off').hidden=s.admin_enabled;
+  $('st').textContent=s.source==='live'?`Live data: ${s.products} products across ${s.months.length} months (${s.months[0]} to ${s.months[s.months.length-1]}).`:'Showing sample data. No files uploaded yet.';
+  $('files').replaceChildren(...s.files.map(f=>Object.assign(document.createElement('li'),{textContent:f})));
+}
+async function send(url,form){
+  const m=$('msg');m.className='';m.textContent='Working';
+  try{const r=await fetch(url,{method:'POST',body:new FormData(form)}),j=await r.json();m.textContent=j.message;m.className=r.ok?'ok':'bad';if(r.ok)status()}
+  catch{m.textContent='The request failed. Check your connection and try again.';m.className='bad'}
+}
+$('up').onsubmit=e=>{e.preventDefault();send('/admin/upload',e.target)};
+$('pfm').onsubmit=e=>{e.preventDefault();send('/admin/portfolio',e.target)};
+status();
+</script>
+</body>
+</html>

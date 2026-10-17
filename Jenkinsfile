@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         // Change 'bhashkarsingh' to your Docker Hub username or AWS ECR URI
-        DOCKER_HUB_USER        = 'bhashkarsingh'
+        DOCKER_HUB_USER        = 'bhashkar25'
         APP_NAME               = 'drug-tariff-analytics'
         IMAGE_NAME             = "${DOCKER_HUB_USER}/${APP_NAME}"
         IMAGE_TAG              = "${BUILD_NUMBER}"
